@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+
+
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.2&key=3f3868abdb36336114bde5ab6eecdb68"></script>
+    <script src="http://waimai.sankuai.com/static/js/jquery-1.9.1.js"></script>
+    <script src="./GDMap.source.js"></script>
+
+</head>
+<body>
+
+//创建新地图方法（容器，中心点）
+//画多边形方法
+//画圆形方法
+//根据多边形和圆形数据绘制地图（可定义不同颜色）
+//画点方法
+//根据搜索地址定位地图中心点方法
+<h2>多区域绘制</h2>
+<button id="map1start">画多边形</button>
+<button id="map1last">获取最终多边形坐标</button>
+<div id="map1" style="width:700px; height:450px;"></div>
+首次画图结束结果<span id="map1resault"></span><br/>
+最终画图结束结果<span id="map1resaultlast"></span>
+<script>
+
+    $(document).ready(function(){
+        //Map1
+        var newmap1;var PlygonList=[];
+        newmap1=new WAIMAICOS.GDMap({center:[116.404, 39.915],zoom:12,container:"map1"}).addMarker({'lng':116.404,'lat':39.915}).addToolBar();
+
+        $("#map1start").click(function(){
+
+            $(this).text('请画图').attr('disabled','disabled');
+
+            var ColorStr='#'+('00000'+(Math.random()*0x1000000<<0).toString(16)).slice(-6);
+            newmap1.drawPlygon({strokeColor:ColorStr,fillColor:ColorStr},function(e,obj){
+                //alert();
+                PlygonList.push(obj);
+                $("#map1resault").html(obj.getPath().join());
+                $("#map1start").text('再画一个区域').attr('disabled',false);
+
+            });
+        });
+        var reshtml='';
+        $("#map1last").click(function(){
+            for (var i = 0; i < PlygonList.length; i++) {
+                var o = PlygonList[i];
+                reshtml+=i+":"+o.getPath().join()+"<br/>";
+            }
+            $("#map1resaultlast").html(reshtml);
+            reshtml='';
+        });
+
+        //Map2
+        var newmap2=new WAIMAICOS.GDMap({center:[116.404, 39.915],zoom:12,container:"map2"}).addToolBar();
+
+        //Map3
+        var newmap3=new WAIMAICOS.GDMap({center:[116.404, 39.915],zoom:12,container:"map3"}).addToolBar();
+        var marker3=null;
+        $("#map3start").click(function(){
+            if(!marker3){
+                marker3 = new AMap.Marker({
+                    position:newmap3.getMap().getCenter(),
+                    draggable:true, //点标记可拖拽
+                    cursor:'move',   //鼠标悬停点标记时的鼠标样式
+                    raiseOnDrag:true,
+                    icon:new AMap.Icon({//定制图标
+                        size:new AMap.Size(36,36),//图标大小
+                        image:"http://waimai.sankuai.com/static/img/poi_marker.png", //大图地址
+                        imageOffset:new AMap.Pixel(0,0)//相对于大图的取图位置
+                    }),
+                });
+                marker3.setMap(newmap3.getMap());
+                marker3.setAnimation('AMAP_ANIMATION_DROP'); //设置点标记的动画效果，此处为弹跳效果
+            }else{
+                console.log(newmap3.getMap().getCenter());
+                marker3.setPosition(newmap3.getMap().getCenter());
+            }
+
+
+            $("#map3resault").html(newmap3.getMap().getCenter().toString());
+            AMap.event.addListener(marker3,"dragend",function(e){
+                //console.log(e.getPosition())
+                //console.log(marker3.getPosition().toString());
+                $("#map3resault").html(marker3.getPosition().toString());
+            })
+        })
+
+
+    })
+
+</script>
+<h2>多个责任区地区显示以及列表联动，显示详情</h2>
+<pre>
+四个区域
+1:116.375771,39.957386,116.426582,39.920533,116.463661,39.944226,116.415253,39.963438
+2:116.471558,39.947911,116.440659,39.893143,116.505203,39.915793
+3:116.369934,39.89209,116.4077,39.890773,116.428986,39.858628,116.333542,39.864162
+4:116.499023,39.897885,116.535416,39.906839,116.547089,39.871013,116.480827,39.856519
+</pre>
+<div id="list2" style="width:200px;float: left;">
+    <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+    </ul>
+</div>
+<div id="map2" style="width:700px; height:450px;"></div>
+
+
+<h2>单个坐标点标注（比如商家位置）</h2>
+<div id="map3" style="width:700px; height:450px;"></div>
+<button id="map3start">标注为此位置（标注后可以用鼠标拖动）</button>
+标注结果<span id="map3resault"></span><br/>
+<h2>配送区域及起送价标注/显示</h2>
+</body>
+</html>
